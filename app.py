@@ -9,15 +9,14 @@ st.title("📊 Product Demand Segmentation using K-Means")
 
 st.subheader("Enter Product & Marketing Details")
 
-# ---------------- USER INPUT ----------------
+# ---------- USER INPUT ----------
 quantity_required = st.number_input("Quantity Required", min_value=0, value=100)
 marketing_efforts = st.number_input("Marketing Efforts", min_value=0, value=50)
 a_cost = st.number_input("Marketing Cost A", min_value=0.0, value=10000.0)
 b_cost = st.number_input("Marketing Cost B", min_value=0.0, value=8000.0)
 c_cost = st.number_input("Marketing Cost C", min_value=0.0, value=6000.0)
 
-# ---------------- SAMPLE TRAINING DATA ----------------
-# (Used to fit K-Means model)
+# ---------- SAMPLE TRAINING DATA ----------
 data = {
     'quantity_required': [50, 200, 150, 80, 300, 120],
     'marketing_efforts': [30, 90, 70, 40, 110, 60],
@@ -28,19 +27,47 @@ data = {
 
 df = pd.DataFrame(data)
 
-X = df[['quantity_required',
-        'marketing_efforts',
-        'a_marketing_annual_cost',
-        'b_marketing_annual_cost',
-        'c_marketing_annual_cost']]
+X = df[[
+    'quantity_required',
+    'marketing_efforts',
+    'a_marketing_annual_cost',
+    'b_marketing_annual_cost',
+    'c_marketing_annual_cost'
+]]
 
-# ---------------- SCALING ----------------
+# ---------- SCALING ----------
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# ---------------- K-MEANS ----------------
+# ---------- K-MEANS MODEL ----------
 kmeans = KMeans(n_clusters=3, random_state=42)
 kmeans.fit(X_scaled)
 
-# ---------------- PREDICTION ----------------
-user_data_
+# ---------- USER PREDICTION ----------
+user_data = [[
+    quantity_required,
+    marketing_efforts,
+    a_cost,
+    b_cost,
+    c_cost
+]]
+
+user_scaled = scaler.transform(user_data)
+cluster = kmeans.predict(user_scaled)[0]
+
+# ---------- OUTPUT ----------
+st.subheader("🔍 Demand Segmentation Result")
+
+if cluster == 0:
+    st.success("🔥 High Demand Product")
+elif cluster == 1:
+    st.warning("⚖ Medium Demand Product")
+else:
+    st.info("❄ Low Demand Product")
+
+st.markdown("""
+### 📌 Cluster Meaning
+- **High Demand** → High quantity & strong marketing impact  
+- **Medium Demand** → Moderate quantity & marketing  
+- **Low Demand** → Low quantity & weak marketing  
+""")
