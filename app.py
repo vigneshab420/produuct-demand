@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 
@@ -8,61 +7,40 @@ st.set_page_config(page_title="Product Demand Segmentation", layout="centered")
 
 st.title("📊 Product Demand Segmentation using K-Means")
 
-# Upload CSV file
-uploaded_file = st.file_uploader("Upload your CSV dataset", type=["csv"])
+st.subheader("Enter Product & Marketing Details")
 
-if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
+# ---------------- USER INPUT ----------------
+quantity_required = st.number_input("Quantity Required", min_value=0, value=100)
+marketing_efforts = st.number_input("Marketing Efforts", min_value=0, value=50)
+a_cost = st.number_input("Marketing Cost A", min_value=0.0, value=10000.0)
+b_cost = st.number_input("Marketing Cost B", min_value=0.0, value=8000.0)
+c_cost = st.number_input("Marketing Cost C", min_value=0.0, value=6000.0)
 
-    st.subheader("📁 Dataset Preview")
-    st.dataframe(df.head())
+# ---------------- SAMPLE TRAINING DATA ----------------
+# (Used to fit K-Means model)
+data = {
+    'quantity_required': [50, 200, 150, 80, 300, 120],
+    'marketing_efforts': [30, 90, 70, 40, 110, 60],
+    'a_marketing_annual_cost': [5000, 20000, 15000, 7000, 30000, 12000],
+    'b_marketing_annual_cost': [4000, 18000, 13000, 6000, 25000, 10000],
+    'c_marketing_annual_cost': [3000, 15000, 11000, 5000, 20000, 9000]
+}
 
-    # Convert cost columns (remove 'R' if present)
-    cost_cols = [
+df = pd.DataFrame(data)
+
+X = df[['quantity_required',
+        'marketing_efforts',
         'a_marketing_annual_cost',
         'b_marketing_annual_cost',
-        'c_marketing_annual_cost'
-    ]
+        'c_marketing_annual_cost']]
 
-    for col in cost_cols:
-        if col in df.columns:
-            df[col] = df[col].astype(str).str.replace('R', '', regex=False)
-            df[col] = df[col].astype(float)
+# ---------------- SCALING ----------------
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
 
-    # Feature selection
-    X = df[['quantity_required',
-            'marketing_efforts',
-            'a_marketing_annual_cost',
-            'b_marketing_annual_cost',
-            'c_marketing_annual_cost']]
+# ---------------- K-MEANS ----------------
+kmeans = KMeans(n_clusters=3, random_state=42)
+kmeans.fit(X_scaled)
 
-    # Scaling
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-
-    # K-Means
-    kmeans = KMeans(n_clusters=3, random_state=42)
-    df['Demand_Segment'] = kmeans.fit_predict(X_scaled)
-
-    st.subheader("✅ Segmented Output")
-    st.dataframe(df[['quantity_required', 'marketing_efforts', 'Demand_Segment']].head())
-
-    # Visualization
-    st.subheader("📈 Demand Segmentation Visualization")
-    fig, ax = plt.subplots()
-    scatter = ax.scatter(
-        df['quantity_required'],
-        df['marketing_efforts'],
-        c=df['Demand_Segment']
-    )
-    ax.set_xlabel("Quantity Required")
-    ax.set_ylabel("Marketing Efforts")
-    ax.set_title("Product Demand Segmentation")
-    st.pyplot(fig)
-
-    st.markdown("""
-    ### 🔍 Cluster Meaning
-    - **0 → High Demand**
-    - **1 → Medium Demand**
-    - **2 → Low Demand**
-    """)
+# ---------------- PREDICTION ----------------
+user_data_
